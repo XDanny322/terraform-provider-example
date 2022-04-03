@@ -5,11 +5,11 @@ Code to accompany the [Building a Terraform Provider](https://medium.com/spaceap
 Consists of several components
 
 *  A main.go which serves as the entry point to the provider
-*  A provider package which implments the provider and is consumed by main.go
+*  A provider package which implements the provider and is consumed by main.go
 *  An api package which contains of a main.go which is the entry point to the server. This would not usually live within the same repository as the provider code, it's just here so that all the code for this example lives with in a single repository
     *  The api consists of two packages:
         *  server, which is the implementation of the webserver
-        *  client, which is a client that can be used to programatically interact with the server.
+        *  client, which is a client that can be used to programmatically interact with the server.
 
 ## Requirements
 
@@ -17,9 +17,16 @@ Consists of several components
 
 This project used Go Modules, so you will need to enable them using `export GO111MODULE=on`, otherwise your go commands (run, build and test) will fail.
 
+## Installing provider
+
+```
+mkdir -p ~/.terraform.d/plugins/terraform-example.com/exampleprovider/example/0.1.0/darwin_amd64
+cp terraform-provider-example_v0.1.0 ~/.terraform.d/plugins/terraform-example.com/
+```
+
 ## API
 
-The API is pretty simple, it just stores items which have a name, description and some tags, tags are a slice of strings. Name serves as the id for the Item. 
+The API is pretty simple, it just stores items which have a name, description and some tags, tags are a slice of strings. Name serves as the id for the Item.
 
 ``` go
 type Item struct {
@@ -31,15 +38,55 @@ type Item struct {
 
 ### Routes
 
-All Items are stored in memeory in a `map[string]Item`, where the key is the name of the Item.
+All Items are stored in memory in a `map[string]Item`, where the key is the name of the Item.
 
 The server has five routes:
 
 *  POST /item  - Create an item
-*  GET /item - Retrive all of the items
+*  GET /item - Retrieve all of the items
 *  GET /item/{name} - Retrieve a single item by name
 *  PUT /item/{name} - Update a single item by name
 *  DELETE /item/{name} - Delete a single item by name
+
+#### examples
+
+```bash
+curl -X POST \
+    --header "Authorization: 123" \
+    http://localhost:3001/item \
+    --data '
+    {
+        "name": "danny2",
+        "description": "SomeDesc",
+        "tags": [
+            "t1",
+            "t2"
+        ]
+    }
+    '
+```
+
+```bash
+curl -X PUT \
+    --header "Authorization: 123" \
+    http://localhost:3001/item/danny2 \
+    --data '
+    {
+        "name": "danny2",
+        "description": "SomeDesc2",
+        "tags": [
+            "t1",
+            "t2"
+        ]
+    }
+    '
+```
+
+```bash
+curl \
+    --header "Authorization: 123" \
+    http://localhost:3001/item
+```
 
 ### Starting the Server
 
@@ -53,7 +100,7 @@ An non-empty `Authorization` header must be provided with all requests. The serv
 
 ## Client
 
-The client can be used to programatically interact with the Server and is what the provider will use.
+The client can be used to programmatically interact with the Server and is what the provider will use.
 
 There is a `NewClient` function that will return a `*Client`. The function takes a hostname, port and token (The token can be anything that is not an empty string).
 

@@ -1,3 +1,12 @@
+# terraform {
+#   required_providers {
+#     example = {
+#       version = "~> 0.1.0"
+#       source  = "terraform-example.com/exampleprovider/example"
+#     }
+#   }
+# }
+
 provider "example" {
   address = "http://localhost"
   port    = "3001"
@@ -12,3 +21,4 @@ resource "example_item" "test" {
       "world"
   ]
 }
+
